@@ -1,0 +1,22 @@
+{
+  "name": "keleo-studio-mcp",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP server for the Keleo Studio Apps Script API",
+  "bin": {
+    "keleo-studio-mcp": "./src/server.js"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "check:live": "node utils/live-check.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.0.0"
+  }
+}
