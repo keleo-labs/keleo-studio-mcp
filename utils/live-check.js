@@ -6,7 +6,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 
 const deployment = process.env.KELEO_STUDIO_URL;
 if (!deployment) {
-  console.error('Set KELEO_STUDIO_URL to the deployed Keleo Studio /exec URL.');
+  console.error('Set KELEO_STUDIO_URL to the Keleo Studio API URL.');
   process.exit(1);
 }
 
@@ -49,26 +49,29 @@ try {
   const hello = await send('initialize', {
     protocolVersion: '2025-06-18',
     capabilities: {},
-    clientInfo: { name: 'keleo-studio-live-check', version: '3.0.0' }
+    clientInfo: { name: 'keleo-studio-live-check', version: '3.1.0' }
   });
   if (hello.error) throw new Error(hello.error.message);
   child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })}\n`);
 
-  await call('start_auth');
-  console.error('Keleo Studio is opening in your browser. Complete Google sign-in there if needed.');
-  let authenticated = false;
-  let previousState = '';
-  for (let attempt = 0; attempt < 120; attempt++) {
-    await delay(2000);
-    const status = await call('auth_status');
-    if (status.state !== previousState) {
-      console.error(`Browser authentication: ${status.state}`);
-      previousState = status.state;
+  const browserAuth = (process.env.KELEO_STUDIO_BACKEND || 'gas') === 'gas' || process.env.KELEO_STUDIO_AUTH === 'oauth';
+  if (browserAuth) {
+    await call('start_auth');
+    console.error('Keleo Studio is opening in your browser. Complete sign-in there if needed.');
+    let authenticated = false;
+    let previousState = '';
+    for (let attempt = 0; attempt < 120; attempt++) {
+      await delay(2000);
+      const status = await call('auth_status');
+      if (status.state !== previousState) {
+        console.error(`Browser authentication: ${status.state}`);
+        previousState = status.state;
+      }
+      if (status.error) throw new Error(status.error);
+      if (status.authenticated) { authenticated = true; break; }
     }
-    if (status.error) throw new Error(status.error);
-    if (status.authenticated) { authenticated = true; break; }
+    if (!authenticated) throw new Error('Browser authentication did not complete within four minutes.');
   }
-  if (!authenticated) throw new Error('Apps Script token bridge did not complete within four minutes. Is the bridge deployed?');
   const packages = await call('list_packages');
   if (!Array.isArray(packages.bundles)) throw new Error('The packages API did not return a bundles array.');
   console.log(`Live MCP API check passed: ${packages.bundles.length} packages returned.`);

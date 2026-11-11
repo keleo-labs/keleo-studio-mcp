@@ -1,10 +1,10 @@
 Feature: Keleo Studio MCP access
   As an agent using Keleo Studio
-  I want typed tools for its Apps Script API
+  I want typed tools for its Apps Script or REST API
   So that I can inspect and upload library content with the user's authority
 
   Background:
-    Given a Keleo Studio web app deployment URL is configured
+    Given a Keleo Studio API URL is configured
 
   Scenario: Apps Script token bridge
     Given the MCP server has no usable token
@@ -41,3 +41,33 @@ Feature: Keleo Studio MCP access
     When the agent calls an API tool
     Then the tool reports that authentication must be repeated
     And the token is discarded from process memory
+
+  Scenario: REST OAuth authentication
+    Given the REST backend uses OAuth with an OIDC issuer and public client
+    When the agent starts authentication and the user signs in
+    Then the server exchanges the authorization code using PKCE
+    And the access token is held only in process memory
+
+  Scenario: REST bearer authentication
+    Given the REST backend has a configured bearer token
+    When the agent reads the library
+    Then the request includes that token in the Authorization header
+    And no browser handoff is required
+
+  Scenario: REST without authentication
+    Given the REST backend is configured without authentication
+    When the agent reads the library
+    Then the request has no Authorization header
+    And a backend denial is reported to the agent
+
+  Scenario: REST resource access
+    Given the REST backend is configured
+    When the agent reads a package or document
+    Then the server calls the corresponding resource path
+    And it returns the same JSON shape as the Apps Script backend
+
+  Scenario: REST package upload
+    Given the REST backend is configured and a .keleo file exists
+    When the agent uploads the package
+    Then the original bytes are posted to the packages resource
+    And the resulting bundle metadata is returned
