@@ -1,9 +1,9 @@
 {
   "name": "keleo-studio-mcp",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "private": true,
   "type": "module",
-  "description": "Local MCP server for the Keleo Studio Apps Script API",
+  "description": "Local MCP server for Keleo Studio Apps Script and REST APIs",
   "bin": {
     "keleo-studio-mcp": "./src/server.js"
   },
