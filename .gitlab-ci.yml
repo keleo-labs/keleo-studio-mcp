@@ -12,12 +12,10 @@
 stages:
   - scan
 
-# Some instances set run_untagged: false on every shared runner, which leaves
-# an untagged job pending indefinitely rather than failing -- it looks like a
-# slow queue. Add the tags your instance requires here if that happens.
-# default:
-#   tags:
-#     - your-runner-tag
+# The available instance runners require this tag; they do not run untagged jobs.
+default:
+  tags:
+    - itup-alm-x86
 
 gitleaks:
   stage: scan
